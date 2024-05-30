@@ -203,6 +203,7 @@ public class MyBot : IChessBot
     static int hardBoundTM = 10;
     static int softBoundTM = 40;
     static Move[] TT = new Move[33554432];
+    static Move[] killers = new Move[1024];
     static Move searchBestMove = Move.NullMove;
     static Move rootBestMove = Move.NullMove;
 
@@ -239,7 +240,7 @@ public class MyBot : IChessBot
                 return 0;
             }
 
-            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1 : 0))
+            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 100_000_000 : move == killers[ply] ? 10_000_000 : 0))
             {
                 nodes++;
                 board.MakeMove(move);
@@ -266,6 +267,13 @@ public class MyBot : IChessBot
 
                 if (score >= beta)
                 {
+                    if (!move.IsCapture)
+                    {
+                        if (killers[ply] == Move.NullMove)
+                        {
+                            killers[ply] = move;
+                        }
+                    }
                     break;
                 }
             }
@@ -281,10 +289,14 @@ public class MyBot : IChessBot
             for (int depth = 1; depth < 256; ++depth)
             {
                 globalDepth = depth;
+
                 if (depth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / softBoundTM)
                 {
                     break;
                 }
+
+                killers = new Move[1024];
+
                 int score = AlphaBeta(depth, 0, alpha, beta);
                 rootBestMove = searchBestMove;
                 Console.WriteLine($"info depth {depth} time {timer.MillisecondsElapsedThisTurn} nodes {nodes} nps {1000 * nodes / ((ulong)timer.MillisecondsElapsedThisTurn + 1)} score cp {score} pv {ChessChallenge.Chess.MoveUtility.GetMoveNameUCI(new(rootBestMove.RawValue))}");
