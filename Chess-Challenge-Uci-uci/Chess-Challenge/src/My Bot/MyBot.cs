@@ -209,7 +209,8 @@ public class MyBot : IChessBot
     {
         nodes = 0;
 
-        int AlphaBeta(int depth, int ply)
+
+        int AlphaBeta(int depth, int ply, int alpha, int beta)
         {
 
             if (globalDepth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
@@ -240,8 +241,14 @@ public class MyBot : IChessBot
             {
                 nodes++;
                 board.MakeMove(move);
-                int score = -AlphaBeta(depth - 1, ply + 1);
+                int score = -AlphaBeta(depth - 1, ply + 1, -beta, -alpha);
                 board.UndoMove(move);
+
+                if (score > alpha)
+                {
+                    alpha = score;
+
+                }
 
                 if (score > max)
                 {
@@ -253,6 +260,10 @@ public class MyBot : IChessBot
 
                 }
 
+                if (score >= beta)
+                {
+                    break;
+                }
             }
 
             return max;
@@ -270,7 +281,7 @@ public class MyBot : IChessBot
                 {
                     break;
                 }
-                int score = AlphaBeta(depth, 0);
+                int score = AlphaBeta(depth, 0, alpha, beta);
                 rootBestMove = searchBestMove;
                 Console.WriteLine($"info depth {depth} time {timer.MillisecondsElapsedThisTurn} nodes {nodes} nps {1000 * nodes / ((ulong)timer.MillisecondsElapsedThisTurn + 1)} score cp {score} pv {ChessChallenge.Chess.MoveUtility.GetMoveNameUCI(new(rootBestMove.RawValue))}");
             }
