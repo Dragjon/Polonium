@@ -161,14 +161,14 @@ public class MyBot : IChessBot
     static int[] mgPieceValues = { 82, 337, 365, 477, 1025, 0 };
     static int[] egPieceValues = { 94, 281, 297, 512, 936, 0 };
 
-    static int[] gamePhaseInc = {0, 1, 1, 2, 4, 0};
+    static int[] gamePhaseInc = { 0, 1, 1, 2, 4, 0 };
 
     public static int Eval(Board board)
     {
         int[] mg = { 0, 0 };
         int[] eg = { 0, 0 };
         int gamePhase = 0;
-        
+
         for (int sq = 0; sq < 64; sq++)
         {
             Piece piece = board.GetPiece(new Square(sq));
@@ -201,79 +201,12 @@ public class MyBot : IChessBot
     static int mateScore = 500_000;
     static int hardBoundTM = 10;
     static int softBoundTM = 40;
-    static Move[] TT = new Move[33554432];
+    static Move searchBestMove = Move.NullMove;
     static Move rootBestMove = Move.NullMove;
-    
+
     public Move Think(Board board, Timer timer)
     {
         nodes = 0;
-
-        int QSearch(int ply, int alpha, int beta)
-        {
-
-            if (timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
-            {
-                throw new TimeoutException();
-            }
-
-            bool nodeIsCheck = board.IsInCheck();
-
-            ulong hash = board.ZobristKey & 33554431;
-
-            Move[] legals = board.GetLegalMoves(true);
-
-            if (nodeIsCheck && legals.Length == 0)
-            {
-                return -mateScore + ply;
-            }
-
-            if (board.IsDraw())
-            {
-                return 0;
-            }
-
-            int standPat = Eval(board);
-            int max = standPat;
-
-            if (standPat >= beta)
-            {
-                return beta;
-            }
-            if (standPat > alpha)
-            {
-                alpha = standPat;
-            }
-
-            legals.OrderByDescending(move => move == TT[hash] ? 1 : 0).ToList();
-
-            foreach (Move move in legals)
-            {
-                nodes++;
-                board.MakeMove(move);
-                int score = -QSearch(ply + 1, -beta, -alpha);
-                board.UndoMove(move);
-
-                if (score > alpha)
-                {
-                    alpha = score;
-                }
-
-                if (score > max)
-                {
-                    max = score;
-                    TT[hash] = move;
-
-                }
-
-                if (score >= beta)
-                {
-                    break;
-                }
-
-            }
-
-            return max;
-        }
 
         int AlphaBeta(int depth, int ply, int alpha, int beta)
         {
@@ -285,13 +218,12 @@ public class MyBot : IChessBot
 
             if (depth == 0)
             {
-                return QSearch(ply, alpha, beta);
+                return Eval(board);
             }
 
             int max = -infinity;
             bool isRoot = ply == 0;
             bool nodeIsCheck = board.IsInCheck();
-            ulong hash = board.ZobristKey & 33554431;
             Move[] legals = board.GetLegalMoves();
 
             board.IsInCheckmate();
@@ -305,9 +237,7 @@ public class MyBot : IChessBot
                 return 0;
             }
 
-            legals.OrderByDescending(move => move == TT[hash] ? 1 : 0).ToList();
-
-            foreach (Move move in board.GetLegalMoves())
+            foreach (Move move in legals.OrderByDescending(move => move == rootBestMove ? 1 : 0))
             {
                 nodes++;
                 board.MakeMove(move);
@@ -322,10 +252,9 @@ public class MyBot : IChessBot
 
                 if (score > max)
                 {
-                    TT[hash] = move;
                     if (isRoot)
                     {
-                        rootBestMove = move;
+                        searchBestMove = move;
                     }
                     max = score;
 
@@ -340,7 +269,8 @@ public class MyBot : IChessBot
             return max;
         }
 
-        try {
+        try
+        {
             int alpha = -infinity;
             int beta = infinity;
             for (int depth = 1; depth < 256; ++depth)
@@ -350,12 +280,14 @@ public class MyBot : IChessBot
                     break;
                 }
                 int score = AlphaBeta(depth, 0, alpha, beta);
-                Console.WriteLine($"info depth {depth} time {timer.MillisecondsElapsedThisTurn} nodes {nodes} nps {1000*nodes / ((ulong)timer.MillisecondsElapsedThisTurn+1)} score cp {score} pv {ChessChallenge.Chess.MoveUtility.GetMoveNameUCI(new(rootBestMove.RawValue))}");
+                rootBestMove = searchBestMove;
+                Console.WriteLine($"info depth {depth} time {timer.MillisecondsElapsedThisTurn} nodes {nodes} nps {1000 * nodes / ((ulong)timer.MillisecondsElapsedThisTurn + 1)} score cp {score} pv {ChessChallenge.Chess.MoveUtility.GetMoveNameUCI(new(rootBestMove.RawValue))}");
             }
         }
 
-        catch (TimeoutException) { 
-        
+        catch (TimeoutException)
+        {
+
         }
 
         return rootBestMove;
