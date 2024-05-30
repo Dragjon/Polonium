@@ -209,57 +209,7 @@ public class MyBot : IChessBot
     {
         nodes = 0;
 
-        int QSearch(int alpha, int beta)
-        {
-            if (globalDepth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
-            {
-                throw new TimeoutException();
-            }
-
-            int standPat = Eval(board);
-            int max = standPat;
-
-            if (standPat >= beta)
-            {
-                return beta;
-            }
-            
-            if (alpha > standPat)
-            {
-                alpha = standPat;
-            }
-
-            Move[] legals = board.GetLegalMoves(true);
-            
-            foreach (Move move in legals)
-            {
-                nodes++;
-                board.MakeMove(move);
-                int score = -QSearch(-beta, -alpha);
-                board.UndoMove(move);
-
-                if (score > alpha)
-                {
-                    alpha = score;
-                }
-
-                if (score > max)
-                {
-                    max = score;
-                }
-
-                if (score >= beta)
-                {
-                    break;
-                } 
-            }
-
-            return max;
-
-
-        }
-
-        int AlphaBeta(int depth, int ply, int alpha, int beta)
+        int AlphaBeta(int depth, int ply)
         {
 
             if (globalDepth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
@@ -269,7 +219,7 @@ public class MyBot : IChessBot
 
             if (depth == 0)
             {
-                return QSearch(alpha, beta);
+                return Eval(board);
             }
 
             int max = -infinity;
@@ -290,14 +240,8 @@ public class MyBot : IChessBot
             {
                 nodes++;
                 board.MakeMove(move);
-                int score = -AlphaBeta(depth - 1, ply + 1, -beta, -alpha);
+                int score = -AlphaBeta(depth - 1, ply + 1);
                 board.UndoMove(move);
-
-                if (score > alpha)
-                {
-                    alpha = score;
-
-                }
 
                 if (score > max)
                 {
@@ -309,10 +253,6 @@ public class MyBot : IChessBot
 
                 }
 
-                if (score >= beta)
-                {
-                    break;
-                }
             }
 
             return max;
@@ -330,7 +270,7 @@ public class MyBot : IChessBot
                 {
                     break;
                 }
-                int score = AlphaBeta(depth, 0, alpha, beta);
+                int score = AlphaBeta(depth, 0);
                 rootBestMove = searchBestMove;
                 Console.WriteLine($"info depth {depth} time {timer.MillisecondsElapsedThisTurn} nodes {nodes} nps {1000 * nodes / ((ulong)timer.MillisecondsElapsedThisTurn + 1)} score cp {score} pv {ChessChallenge.Chess.MoveUtility.GetMoveNameUCI(new(rootBestMove.RawValue))}");
             }
