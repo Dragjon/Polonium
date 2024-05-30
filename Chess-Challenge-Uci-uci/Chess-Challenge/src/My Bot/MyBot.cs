@@ -207,6 +207,15 @@ public class MyBot : IChessBot
     static Move searchBestMove = Move.NullMove;
     static Move rootBestMove = Move.NullMove;
 
+    int[,] mvvlvaTable = {
+        { 150_000_000, 250_000_00, 350_000_000, 450_000_000, 550_000_000, 650_000_000 },
+        { 140_000_000, 240_000_00, 340_000_000, 440_000_000, 540_000_000, 640_000_000 },
+        { 130_000_000, 230_000_00, 330_000_000, 430_000_000, 530_000_000, 630_000_000 },
+        { 120_000_000, 220_000_00, 320_000_000, 420_000_000, 520_000_000, 620_000_000 },
+        { 110_000_000, 210_000_00, 310_000_000, 410_000_000, 510_000_000, 610_000_000 },
+        { 100_000_000, 200_000_00, 300_000_000, 400_000_000, 500_000_000, 600_000_000 },
+    };
+
     public Move Think(Board board, Timer timer)
     {
         nodes = 0;
@@ -240,7 +249,7 @@ public class MyBot : IChessBot
                 return 0;
             }
 
-            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 100_000_000 : move == killers[ply] ? 10_000_000 : 0))
+            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : move.IsCapture ? mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1] : move == killers[ply] ? 1_000_000 : 0))
             {
                 nodes++;
                 board.MakeMove(move);
