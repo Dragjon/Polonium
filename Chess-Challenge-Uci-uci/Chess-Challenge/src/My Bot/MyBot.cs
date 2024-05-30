@@ -202,6 +202,7 @@ public class MyBot : IChessBot
     static int mateScore = 500_000;
     static int hardBoundTM = 10;
     static int softBoundTM = 40;
+    static Move[] TT = new Move[33554432];
     static Move searchBestMove = Move.NullMove;
     static Move rootBestMove = Move.NullMove;
 
@@ -224,6 +225,7 @@ public class MyBot : IChessBot
             }
 
             int max = -infinity;
+            ulong hash = board.ZobristKey % 33554432;
             bool isRoot = ply == 0;
             bool nodeIsCheck = board.IsInCheck();
             Move[] legals = board.GetLegalMoves();
@@ -237,7 +239,7 @@ public class MyBot : IChessBot
                 return 0;
             }
 
-            foreach (Move move in legals.OrderByDescending(move => move == rootBestMove ? 1 : 0))
+            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1 : 0))
             {
                 nodes++;
                 board.MakeMove(move);
@@ -252,6 +254,8 @@ public class MyBot : IChessBot
 
                 if (score > max)
                 {
+                    TT[hash] = move;
+
                     if (isRoot)
                     {
                         searchBestMove = move;
