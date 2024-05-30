@@ -220,6 +220,50 @@ public class MyBot : IChessBot
     {
         nodes = 0;
 
+        int QSearch(int alpha, int beta)
+        {
+            if (globalDepth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
+            {
+                throw new TimeoutException();
+            }
+
+            int standPat = Eval(board);
+            int max = standPat;
+            ulong hash = board.ZobristKey % 33554432;
+
+            if (standPat >= beta)
+            {
+                return beta;
+            }
+            if (standPat > alpha)
+            {
+                alpha = standPat;
+            }
+            foreach (Move move in board.GetLegalMoves(true).OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1]))
+            {
+                nodes++;
+                board.MakeMove(move);
+                int score = -QSearch(-beta, -alpha);
+                board.UndoMove(move);
+                if (score >= beta)
+                {
+                    return beta;
+                }
+                if (score > alpha)
+                {
+                    alpha = score;
+                }
+
+                if (score > max)
+                {
+                    TT[hash] = move;
+                    max = score;
+                }
+            }
+
+            return max;
+
+        }
 
         int AlphaBeta(int depth, int ply, int alpha, int beta)
         {
@@ -231,7 +275,7 @@ public class MyBot : IChessBot
 
             if (depth == 0)
             {
-                return Eval(board);
+                return QSearch(alpha, beta);
             }
 
             int max = -infinity;
