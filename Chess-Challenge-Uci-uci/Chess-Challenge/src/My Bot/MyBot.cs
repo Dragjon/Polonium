@@ -197,6 +197,7 @@ public class MyBot : IChessBot
 
     // Variables for search
     static ulong nodes;
+    static int globalDepth = 0;
     static int infinity = 1_000_000;
     static int mateScore = 500_000;
     static int hardBoundTM = 10;
@@ -208,17 +209,67 @@ public class MyBot : IChessBot
     {
         nodes = 0;
 
+        int QSearch(int alpha, int beta)
+        {
+            if (globalDepth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
+            {
+                throw new TimeoutException();
+            }
+
+            int standPat = Eval(board);
+            int max = standPat;
+
+            if (standPat >= beta)
+            {
+                return beta;
+            }
+            
+            if (alpha > standPat)
+            {
+                alpha = standPat;
+            }
+
+            Move[] legals = board.GetLegalMoves(true);
+            
+            foreach (Move move in legals)
+            {
+                nodes++;
+                board.MakeMove(move);
+                int score = -QSearch(-beta, -alpha);
+                board.UndoMove(move);
+
+                if (score > alpha)
+                {
+                    alpha = score;
+                }
+
+                if (score > max)
+                {
+                    max = score;
+                }
+
+                if (score >= beta)
+                {
+                    break;
+                } 
+            }
+
+            return max;
+
+
+        }
+
         int AlphaBeta(int depth, int ply, int alpha, int beta)
         {
 
-            if (timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
+            if (globalDepth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
             {
                 throw new TimeoutException();
             }
 
             if (depth == 0)
             {
-                return Eval(board);
+                return QSearch(alpha, beta);
             }
 
             int max = -infinity;
@@ -226,13 +277,11 @@ public class MyBot : IChessBot
             bool nodeIsCheck = board.IsInCheck();
             Move[] legals = board.GetLegalMoves();
 
-            board.IsInCheckmate();
-
             if (nodeIsCheck && legals.Length == 0)
             {
                 return -mateScore + ply;
             }
-            if (board.IsDraw())
+            if (!isRoot && board.IsDraw())
             {
                 return 0;
             }
@@ -273,8 +322,10 @@ public class MyBot : IChessBot
         {
             int alpha = -infinity;
             int beta = infinity;
+            globalDepth = 0;
             for (int depth = 1; depth < 256; ++depth)
             {
+                globalDepth = depth;
                 if (depth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / softBoundTM)
                 {
                     break;
