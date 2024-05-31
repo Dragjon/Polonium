@@ -200,6 +200,8 @@ public class MyBot : IChessBot
     static int globalDepth = 0;
     static int infinity = 1_000_000;
     static int nullMoveR = 3;
+    static int rfpMargin = 55;
+    static int rfpDepth = 8;
     static int mateScore = 500_000;
     static int hardBoundTM = 10;
     static int softBoundTM = 40;
@@ -297,9 +299,14 @@ public class MyBot : IChessBot
 
             int eval = Eval(board);
 
+            if (depth <= rfpDepth && eval - rfpMargin * depth >= beta && !nodeIsCheck)
+            {
+                return eval;
+            }
+
             if (eval > beta && board.TrySkipTurn())
             {
-                int nullScore = -AlphaBeta(depth - nullMoveR - 1, ply + 1, -beta, -beta+1) ;
+                int nullScore = -AlphaBeta(depth - nullMoveR - 1, ply + 1, -beta, -beta + 1);
                 board.UndoSkipTurn();
                 if (nullScore >= beta)
                 {
