@@ -1,6 +1,6 @@
 <div align="center">
 
-![polonium](https://github.com/Dragjon/Polonium/assets/140328303/f48a3b2b-f78a-47d3-8133-bceaeb389fa8)
+<img src="https://github.com/Dragjon/Polonium/assets/140328303/f48a3b2b-f78a-47d3-8133-bceaeb389fa8" alt="polonium" width="200" height="200">
 
  
 <h3>Polonium</h3>
