@@ -1,5 +1,5 @@
 # Polonium
- UCI Chess engine in CSharp
+ UCI Chess engine in CSharp using Sebastian Lague's framework
 # Commits
 | Version | Description                     | Elo Gain from Previous |
 |---------|---------------------------------|------------------------|
