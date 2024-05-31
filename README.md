@@ -1,5 +1,25 @@
-# Polonium
- UCI Chess engine in CSharp using Sebastian Lague's framework
+<div align="center">
+
+<img
+  width="200"
+  alt="Polonium Logo"
+  src="https://github.com/Dragjon/Polonium/assets/140328303/f4e3ef80-ad2a-4527-bc64-21b5e5776db1
+">
+ 
+<h3>Polonium</h3>
+<b> UCI Chess engine in CSharp using Sebastian Lague's framework</b>
+<br>
+<br>
+
+[![Commits](https://img.shields.io/github/commits-since/TomaszJaworski777/Javelin/latest?style=for-the-badge)](https://github.com/TomaszJaworski777/Javelin/commits/main)
+<br>
+<br>
+
+| Version | CCRL 40/15 | CCRL Blitz | Estimated | Release Date |
+| :-: | :-: | :-: | :-: | :-: |
+| [1.0.0](https://github.com/TomaszJaworski777/Javelin/releases/tag/1.0.0) | - | - | 1798 | 31th May 2024 |
+
+</div>
 # Commits
 | Version | Description                     | Elo Gain from Previous |
 |---------|---------------------------------|------------------------|
