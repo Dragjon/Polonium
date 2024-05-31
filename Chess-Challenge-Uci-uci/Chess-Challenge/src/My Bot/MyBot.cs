@@ -219,6 +219,7 @@ public class MyBot : IChessBot
     public Move Think(Board board, Timer timer)
     {
         nodes = 0;
+        int[,] history = new int[64, 64];
 
         int QSearch(int alpha, int beta)
         {
@@ -293,7 +294,7 @@ public class MyBot : IChessBot
                 return 0;
             }
 
-            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : move.IsCapture ? mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1] : move == killers[ply] ? 1_000_000 : 0))
+            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : move.IsCapture ? mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1] : move == killers[ply] ? 1_000_000 : history[move.StartSquare.Index, move.TargetSquare.Index]))
             {
                 nodes++;
                 board.MakeMove(move);
@@ -325,6 +326,10 @@ public class MyBot : IChessBot
                         if (killers[ply] == Move.NullMove)
                         {
                             killers[ply] = move;
+                        }
+                        else
+                        {
+                            history[move.StartSquare.Index, move.TargetSquare.Index] = Math.Min(history[move.StartSquare.Index, move.TargetSquare.Index] + depth * depth, 999_999);
                         }
                     }
                     break;
