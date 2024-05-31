@@ -3,6 +3,7 @@
 # Commits
 | Version | Description                     | Elo Gain from Previous |
 |---------|---------------------------------|------------------------|
+| 0.0.7   | Null Move Pruning               | 37.55 +/- 13.99        |
 | 0.0.6   | History Move Ordering           | 37.26 +/- 13.53        |
 | 0.0.5   | Quiescence Search               | 430.82 +/- 112.20      |
 | 0.0.4   | MVV-LVA ordering                | 178.13 +/- 35.74       |
