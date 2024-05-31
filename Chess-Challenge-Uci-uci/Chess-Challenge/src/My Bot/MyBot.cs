@@ -283,6 +283,7 @@ public class MyBot : IChessBot
             int max = -infinity;
             ulong hash = board.ZobristKey % 33554432;
             bool isRoot = ply == 0;
+            bool pvNode = beta - alpha != 1;
             bool nodeIsCheck = board.IsInCheck();
             Move[] legals = board.GetLegalMoves();
 
@@ -297,7 +298,7 @@ public class MyBot : IChessBot
 
             int eval = Eval(board);
 
-            if (eval > beta && board.TrySkipTurn())
+            if (eval > beta && !pvNode && board.TrySkipTurn())
             {
                 int nullScore = -AlphaBeta(depth - nullMoveR - 1, ply + 1, -beta, -beta + 1);
                 board.UndoSkipTurn();
@@ -307,12 +308,27 @@ public class MyBot : IChessBot
                 }
             }
 
+            int moveCount = 0;
 
             foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : move.IsCapture ? mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1] : move == killers[ply] ? 1_000_000 : history[move.StartSquare.Index, move.TargetSquare.Index]))
             {
                 nodes++;
+                moveCount++;
                 board.MakeMove(move);
-                int score = -AlphaBeta(depth - 1, ply + 1, -beta, -alpha);
+                int score = 0;
+                if (moveCount == 1 && pvNode)
+                {
+                    score = -AlphaBeta(depth - 1, ply + 1, -beta, -alpha);
+                }
+                else
+                {
+                    score = -AlphaBeta(depth - 1, ply + 1, -alpha - 1, -alpha);
+
+                    if (beta > score && score > alpha)
+                    {
+                        score = -AlphaBeta(depth - 1, ply + 1, -beta, -alpha);
+                    }
+                }
                 board.UndoMove(move);
 
                 if (score > alpha)
