@@ -4,7 +4,7 @@
 
  
 <h3>Polonium</h3>
-<b> UCI (P(Sq)T only)Chess engine in CSharp using Sebastian Lague's framework</b>
+<b> UCI (P(Sq)T only) Chess engine in CSharp using Sebastian Lague's framework</b>
 <br>
 <br>
 </div>
