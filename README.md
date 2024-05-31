@@ -1,4 +1,4 @@
-# Anthraxx
+# Polonium
  UCI Chess engine in CSharp
 # Commits
 | Version | Description                     | Elo Gain from Previous |
