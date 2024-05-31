@@ -199,6 +199,7 @@ public class MyBot : IChessBot
     static ulong nodes;
     static int globalDepth = 0;
     static int infinity = 1_000_000;
+    static int nullMoveR = 3;
     static int mateScore = 500_000;
     static int hardBoundTM = 10;
     static int softBoundTM = 40;
@@ -274,7 +275,7 @@ public class MyBot : IChessBot
                 throw new TimeoutException();
             }
 
-            if (depth == 0)
+            if (depth <= 0)
             {
                 return QSearch(alpha, beta);
             }
@@ -293,6 +294,19 @@ public class MyBot : IChessBot
             {
                 return 0;
             }
+
+            int eval = Eval(board);
+
+            if (eval > beta && board.TrySkipTurn())
+            {
+                int nullScore = -AlphaBeta(depth - nullMoveR - 1, ply + 1, -beta, -beta + 1);
+                board.UndoSkipTurn();
+                if (nullScore >= beta)
+                {
+                    return nullScore;
+                }
+            }
+
 
             foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : move.IsCapture ? mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1] : move == killers[ply] ? 1_000_000 : history[move.StartSquare.Index, move.TargetSquare.Index]))
             {
