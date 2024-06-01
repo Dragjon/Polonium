@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/Dragjon/Polonium/assets/140328303/f03a2762-5046-4616-83c0-2cdfbc01d3e0" alt="polonium" width="200" height="200">
+<img src="https://github.com/Dragjon/Polonium/assets/140328303/39e9d7e0-2478-4302-8764-b9b1557ba022" alt="polonium" width="200" height="200">
 
 <h3>Polonium</h3>
 <b> UCI Chess P(Sq)T-only engine in CSharp using Sebastian Lague's framework</b>
