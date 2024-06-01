@@ -319,7 +319,10 @@ public class MyBot : IChessBot
             {
                 nodes++;
                 board.MakeMove(move);
-                int score = -AlphaBeta(depth - 1, ply + 1, -beta, -alpha);
+
+                int checkExtension = board.IsInCheck() ? 1 : 0;
+
+                int score = -AlphaBeta(depth - 1 + checkExtension, ply + 1, -beta, -alpha);
                 board.UndoMove(move);
 
                 if (score > alpha)
