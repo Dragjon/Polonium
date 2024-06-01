@@ -4,7 +4,7 @@
 
  
 <h3>Polonium</h3>
-<b> UCI Chess engine in CSharp using Sebastian Lague's framework</b>
+<b> UCI (P(Sq)T only) Chess engine in CSharp using Sebastian Lague's framework</b>
 <br>
 <br>
 </div>
@@ -12,6 +12,7 @@
 # Commits
 | Version | Description                     | Elo Gain from Previous |
 |---------|---------------------------------|------------------------|
+| 0.0.8   | Reverse Futility Pruning        | 55.69 +/- 17.00        |
 | 0.0.7   | Null Move Pruning               | 37.55 +/- 13.99        |
 | 0.0.6   | History Move Ordering           | 37.26 +/- 13.53        |
 | 0.0.5   | Quiescence Search               | 430.82 +/- 112.20      |
