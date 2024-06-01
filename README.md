@@ -12,6 +12,7 @@
 # Commits
 | Version | Description                     | Elo Gain from Previous |
 |---------|---------------------------------|------------------------|
+| 0.0.9   | Check Extension                 | 40.32 +/- 14.21        |
 | 0.0.8   | Reverse Futility Pruning        | 55.69 +/- 17.00        |
 | 0.0.7   | Null Move Pruning               | 37.55 +/- 13.99        |
 | 0.0.6   | History Move Ordering           | 37.26 +/- 13.53        |
