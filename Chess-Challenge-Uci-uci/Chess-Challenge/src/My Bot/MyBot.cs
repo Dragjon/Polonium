@@ -10,6 +10,7 @@
 ***********************************************************************/
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using ChessChallenge.API;
 
@@ -202,6 +203,10 @@ public class MyBot : IChessBot
     static int nullMoveR = 3;
     static int rfpMargin = 55;
     static int rfpDepth = 8;
+    static int lmrCount = 5;
+    static int lmrDepth = 2;
+    static double lmrBase = 0.75D;
+    static double lmrMul = 0.4D;
     static int mateScore = 500_000;
     static int hardBoundTM = 10;
     static int softBoundTM = 40;
@@ -285,6 +290,7 @@ public class MyBot : IChessBot
             int max = -infinity;
             ulong hash = board.ZobristKey % 33554432;
             bool isRoot = ply == 0;
+            bool pvNode = beta - alpha != 1;
             bool nodeIsCheck = board.IsInCheck();
             Move[] legals = board.GetLegalMoves();
 
@@ -314,15 +320,36 @@ public class MyBot : IChessBot
                 }
             }
 
+            int moveCount = 0;
 
             foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : move.IsCapture ? mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1] : move == killers[ply] ? 1_000_000 : history[move.StartSquare.Index, move.TargetSquare.Index]))
             {
                 nodes++;
+                moveCount++;
+
                 board.MakeMove(move);
 
-                int checkExtension = board.IsInCheck() ? 1 : 0;
+                bool boardIsCheck = board.IsInCheck();
 
-                int score = -AlphaBeta(depth - 1 + checkExtension, ply + 1, -beta, -alpha);
+                int checkExtension = boardIsCheck ? 1 : 0;
+                int lmr = moveCount > lmrCount && depth >= lmrDepth && !move.IsCapture && !nodeIsCheck && !pvNode ? (int)(lmrBase + Math.Log(depth) * Math.Log(moveCount) * lmrMul) : 0;
+
+                int score = 0;
+
+                if (moveCount == 1 && pvNode)
+                {
+                    score = -AlphaBeta(depth + checkExtension - 1, ply + 1, -beta, -alpha);
+                }
+                else
+                {
+                    score = -AlphaBeta(depth + checkExtension - lmr - 1, ply + 1, -alpha - 1, -alpha);
+
+                    if (score > alpha && beta > score)
+                    {
+                        score = -AlphaBeta(depth + checkExtension - 1, ply + 1, -beta, -alpha);
+                    }
+                }
+
                 board.UndoMove(move);
 
                 if (score > alpha)
