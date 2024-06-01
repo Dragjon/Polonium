@@ -10,7 +10,7 @@
 </div>
 
 # Commits
-| Version | Description                     | Elo Gain from Previous [2+0.02][0, 5] | Elo Gain from Previous [5+0.05][0, 10] | Predicted CCRL Elo |
+| Version | Description                     | Elo Gain from Previous [2+0.02][0, 5] | Elo Gain from Previous [10+0.1][0, 10] | Predicted CCRL Elo |
 |---------|---------------------------------|---------------------------------------|----------------------------------------|--------------------|
 | 0.0.9   | Check Extension                 | 40.32 +/- 14.21                       | -                                      | -                  |
 | 0.0.8   | Reverse Futility Pruning        | 55.69 +/- 17.00                       | -                                      | -                  |
