@@ -207,9 +207,11 @@ public class MyBot : IChessBot
     static int lmrDepth = 2;
     static double lmrBase = 0.75D;
     static double lmrMul = 0.4D;
+
     static int mateScore = 500_000;
     static int hardBoundTM = 10;
     static int softBoundTM = 40;
+
     static Move[] TT = new Move[33554432];
     static Move[] killers = new Move[1024];
     static Move searchBestMove = Move.NullMove;
@@ -228,6 +230,7 @@ public class MyBot : IChessBot
     {
         nodes = 0;
         int[,] history = new int[64, 64];
+        Move[,] counters = new Move[64, 64];
 
         int QSearch(int alpha, int beta)
         {
@@ -274,7 +277,7 @@ public class MyBot : IChessBot
 
         }
 
-        int AlphaBeta(int depth, int ply, int alpha, int beta)
+        int AlphaBeta(int depth, int ply, int alpha, int beta, Move parentMove)
         {
 
             if (globalDepth > 1 && timer.MillisecondsElapsedThisTurn > timer.MillisecondsRemaining / hardBoundTM)
@@ -312,7 +315,7 @@ public class MyBot : IChessBot
 
             if (eval > beta && board.TrySkipTurn())
             {
-                int nullScore = -AlphaBeta(depth - nullMoveR - 1, ply + 1, -beta, -beta + 1);
+                int nullScore = -AlphaBeta(depth - nullMoveR - 1, ply + 1, -beta, -beta + 1, Move.NullMove);
                 board.UndoSkipTurn();
                 if (nullScore >= beta)
                 {
@@ -322,7 +325,7 @@ public class MyBot : IChessBot
 
             int moveCount = 0;
 
-            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : move.IsCapture ? mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1] : move == killers[ply] ? 1_000_000 : history[move.StartSquare.Index, move.TargetSquare.Index]))
+            foreach (Move move in legals.OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : move.IsCapture ? mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1] : move == killers[ply] ? 10_000_000 : move == counters[parentMove.StartSquare.Index, parentMove.TargetSquare.Index] ? 1_000_000 : history[move.StartSquare.Index, move.TargetSquare.Index]))
             {
                 nodes++;
                 moveCount++;
@@ -338,15 +341,15 @@ public class MyBot : IChessBot
 
                 if (moveCount == 1 && pvNode)
                 {
-                    score = -AlphaBeta(depth + checkExtension - 1, ply + 1, -beta, -alpha);
+                    score = -AlphaBeta(depth + checkExtension - 1, ply + 1, -beta, -alpha, move);
                 }
                 else
                 {
-                    score = -AlphaBeta(depth + checkExtension - lmr - 1, ply + 1, -alpha - 1, -alpha);
+                    score = -AlphaBeta(depth + checkExtension - lmr - 1, ply + 1, -alpha - 1, -alpha, move);
 
                     if (score > alpha && beta > score)
                     {
-                        score = -AlphaBeta(depth + checkExtension - 1, ply + 1, -beta, -alpha);
+                        score = -AlphaBeta(depth + checkExtension - 1, ply + 1, -beta, -alpha, move);
                     }
                 }
 
@@ -374,13 +377,12 @@ public class MyBot : IChessBot
                 {
                     if (!move.IsCapture)
                     {
-                        if (killers[ply] == Move.NullMove)
+                        killers[ply] = move;
+                        history[move.StartSquare.Index, move.TargetSquare.Index] = Math.Min(history[move.StartSquare.Index, move.TargetSquare.Index] + depth * depth, 999_999);
+
+                        if (!parentMove.IsNull)
                         {
-                            killers[ply] = move;
-                        }
-                        else
-                        {
-                            history[move.StartSquare.Index, move.TargetSquare.Index] = Math.Min(history[move.StartSquare.Index, move.TargetSquare.Index] + depth * depth, 999_999);
+                            counters[parentMove.StartSquare.Index, parentMove.TargetSquare.Index] = move;
                         }
                     }
                     break;
@@ -406,7 +408,7 @@ public class MyBot : IChessBot
 
                 killers = new Move[1024];
 
-                int score = AlphaBeta(depth, 0, alpha, beta);
+                int score = AlphaBeta(depth, 0, alpha, beta, Move.NullMove);
                 rootBestMove = searchBestMove;
                 Console.WriteLine($"info depth {depth} time {timer.MillisecondsElapsedThisTurn} nodes {nodes} nps {1000 * nodes / ((ulong)timer.MillisecondsElapsedThisTurn + 1)} score cp {score} pv {ChessChallenge.Chess.MoveUtility.GetMoveNameUCI(new(rootBestMove.RawValue))}");
             }
