@@ -11,6 +11,7 @@
 # Commits
 | Version | Description                     | Elo [2+0.02][0, 5]    | Elo [10+0.1][0, 10] | Predicted CCRL Elo |
 |---------|---------------------------------|-----------------------|---------------------|--------------------|
+| 0.1.1   | Counter moves and OW killers    | -                     | 10.99 +/- 8.39      | -                  |
 | 0.1.0   | PVS and late moves reduction    | -                     | 27.44 +/- 15.33     | -                  |
 | 0.0.9   | Check Extension                 | 40.32 +/- 14.21       | -                   | -                  |
 | 0.0.8   | Reverse Futility Pruning        | 55.69 +/- 17.00       | -                   | -                  |
