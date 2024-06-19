@@ -275,12 +275,13 @@ public class MyBot : IChessBot
                 nodes++;
                 moveCount++;
 
+                int lmr = moveCount > lmrCount && depth >= lmrDepth && !move.IsCapture && !nodeIsCheck && !pvNode ? (int)(lmrBase + Math.Log(depth) * Math.Log(moveCount) * lmrMul) : 0;
+
                 board.MakeMove(move);
 
                 bool boardIsCheck = board.IsInCheck();
 
                 int checkExtension = boardIsCheck ? 1 : 0;
-                int lmr = moveCount > lmrCount && depth >= lmrDepth && !move.IsCapture && !nodeIsCheck && !pvNode ? (int)(lmrBase + Math.Log(depth) * Math.Log(moveCount) * lmrMul) : 0;
 
                 int score = 0;
 
@@ -339,8 +340,11 @@ public class MyBot : IChessBot
 
         try
         {
+            int score = 0;
             int alpha = -infinity;
             int beta = infinity;
+            int delta = 0;
+
             globalDepth = 0;
             for (int depth = 1; depth < 256; ++depth)
             {
@@ -351,9 +355,42 @@ public class MyBot : IChessBot
                     break;
                 }
 
+                if (depth > 3)
+                {
+                    delta = 40;
+                    alpha = score - delta;
+                    beta = score + delta;
+                }
+
+                int newScore = 0;
+
                 killers = new Move[1024];
 
-                int score = AlphaBeta(depth, 0, alpha, beta, Move.NullMove);
+                while (true)
+                {
+                    newScore = AlphaBeta(depth, 0, alpha, beta, Move.NullMove);
+
+                    if (newScore <= alpha)
+                    {
+                        beta = (alpha + beta) / 2;
+                        alpha = newScore - delta;
+                    }
+
+                    else if (newScore >= beta)
+                    {
+                        beta = newScore + delta;
+                    }
+
+                    else
+                    {
+                        break;
+                    }
+
+                    delta *= 2;
+
+                }
+
+                score = newScore;
                 rootBestMove = searchBestMove;
                 Console.WriteLine($"info depth {depth} time {timer.MillisecondsElapsedThisTurn} nodes {nodes} nps {1000 * nodes / ((ulong)timer.MillisecondsElapsedThisTurn + 1)} score cp {score} pv {ChessChallenge.Chess.MoveUtility.GetMoveNameUCI(new(rootBestMove.RawValue))}");
             }
