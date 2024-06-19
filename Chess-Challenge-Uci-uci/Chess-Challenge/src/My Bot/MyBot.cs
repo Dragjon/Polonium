@@ -145,6 +145,7 @@ public class MyBot : IChessBot
     static int lmrDepth = 2;
     static double lmrBase = 0.75D;
     static double lmrMul = 0.4D;
+    static int[] deltas = { 180, 400, 450, 550, 1100 };
 
     static int mateScore = 500_000;
     static int hardBoundTM = 10;
@@ -191,6 +192,12 @@ public class MyBot : IChessBot
             }
             foreach (Move move in board.GetLegalMoves(true).OrderByDescending(move => move == TT[hash] ? 1_000_000_000 : mvvlvaTable[(int)move.MovePieceType - 1, (int)move.CapturePieceType - 1]))
             {
+
+                if (standPat + deltas[(int)move.CapturePieceType - 1] < alpha)
+                {
+                    return alpha;
+                }
+
                 nodes++;
                 board.MakeMove(move);
                 int score = -QSearch(-beta, -alpha);
