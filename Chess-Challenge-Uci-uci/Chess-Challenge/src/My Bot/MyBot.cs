@@ -102,6 +102,7 @@ public class MyBot : IChessBot
     };
 
     static int[] gamePhaseInc = { 0, 1, 1, 2, 4, 0 };
+    static int tempo = 10;
 
     public static int Eval(Board board)
     {
@@ -130,7 +131,7 @@ public class MyBot : IChessBot
 
         int egPhase = 24 - gamePhase;
 
-        return (mgScore * gamePhase + egScore * egPhase) / 24;
+        return tempo + ((mgScore * gamePhase + egScore * egPhase) / 24);
     }
 
 
